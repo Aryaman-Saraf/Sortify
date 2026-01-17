@@ -1,7 +1,9 @@
 # generator.py
+from tqdm import tqdm
 
 from materials import materials
 from scoring import compute_difficulty, compute_points, compute_priority
+
 
 # --------------------------------------------------
 # 200+ BASE ITEMS (CORE ONTOLOGY)
@@ -216,65 +218,81 @@ legal_status = [
 # --------------------------------------------------
 # GENERATOR ENGINE
 # --------------------------------------------------
+TOTAL_COMBINATIONS = (
+    len(base_items)
+    * len(conditions)
+    * len(sizes)
+    * len(sources)
+    * len(packaging)
+    * len(age)
+    * len(time_of_day)
+    * len(moisture)
+    * len(damage)
+    * len(season)
+    * len(recyclability_state)
+    * len(odor_level)
+    * len(toxicity)
+    * len(storage_time)
+    * len(user_awareness)
+    * len(collection_method)
+    * len(legal_status)
+)
+
 
 def generate_waste_library():
     waste_library = {}
 
-    for item_name, material_key in base_items.items():
-        material = materials[material_key]
+    with tqdm(total=TOTAL_COMBINATIONS, desc="Generating waste library") as pbar:
+        for item_name, material_key in base_items.items():
+            material = materials[material_key]
 
-        for condition in conditions:
-            for size in sizes:
-                for source in sources:
-                    for pack in packaging:
-                        for state in age:
-                            for time in time_of_day:
-                                for wetness in moisture:
-                                    for breakage in damage:
-                                        for seasonality in season:
-                                            for recycle_state in recyclability_state:
-                                                for smell in odor_level:
-                                                    for tox in toxicity:
-                                                        for storage in storage_time:
-                                                            for awareness in user_awareness:
-                                                                for collection in collection_method:
-                                                                    for legal in legal_status:
+            for condition in conditions:
+                for size in sizes:
+                    for source in sources:
+                        for pack in packaging:
+                            for state in age:
+                                for time in time_of_day:
+                                    for wetness in moisture:
+                                        for breakage in damage:
+                                            for seasonality in season:
+                                                for recycle_state in recyclability_state:
+                                                    for smell in odor_level:
+                                                        for tox in toxicity:
+                                                            for storage in storage_time:
+                                                                for awareness in user_awareness:
+                                                                    for collection in collection_method:
+                                                                        for legal in legal_status:
 
-                                                                        difficulty = compute_difficulty(
-                                                                            material["base_difficulty"],
-                                                                            condition,
-                                                                            pack
-                                                                        )
+                                                                            difficulty = compute_difficulty(
+                                                                                material["base_difficulty"],
+                                                                                condition,
+                                                                                pack
+                                                                            )
 
-                                                                        points = compute_points(difficulty)
-                                                                        priority = compute_priority(difficulty)
+                                                                            points = compute_points(difficulty)
+                                                                            priority = compute_priority(difficulty)
 
-                                                                        key = (
-    f"{condition} {state} {size} {item_name} "
-    f"{wetness} {breakage} {smell} "
-    f"from {source} during {seasonality} "
-    f"{time} ({pack}, {recycle_state}, "
-    f"{tox}, {storage}, {awareness}, "
-    f"{collection}, {legal})"
-)
+                                                                            key = (
+                                                                                f"{condition} {state} {size} {item_name} "
+                                                                                f"{wetness} {breakage} {smell} "
+                                                                                f"from {source} during {seasonality} "
+                                                                                f"{time} ({pack}, {recycle_state}, "
+                                                                                f"{tox}, {storage}, {awareness}, "
+                                                                                f"{collection}, {legal})"
+                                                                            )
 
-                                                                        
+                                                                            waste_library[key] = {
+                                                                                "category": material_key,
+                                                                                "bin": material["bin"],
+                                                                                "difficulty": difficulty,
+                                                                                "points": points,
+                                                                                "priority": priority,
+                                                                                "hazard": material["hazard"],
+                                                                                "recyclable": material["recyclable"],
+                                                                                "legal_status": legal,
+                                                                                "collection_method": collection
+                                                                            }
 
-                                                                        waste_library[key] = {
-    "category": material_key,
-    "bin": material["bin"],
-    "difficulty": difficulty,
-    "points": points,
-    "priority": priority,
-    "hazard": material["hazard"],
-    "recyclable": material["recyclable"],
-    "legal_status": legal,
-    "collection_method": collection
-}
-
-
-    return waste_library
-
+                                                                            pbar.update(1)
 
     return waste_library
-
